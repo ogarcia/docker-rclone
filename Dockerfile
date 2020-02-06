@@ -1,6 +1,6 @@
-FROM alpine:latest
-MAINTAINER Oscar Garcia Amor (https://ogarcia.me)
+ARG ALPINE_VERSION
 
+FROM alpine:${ALPINE_VERSION}
 ADD https://downloads.rclone.org/rclone-current-linux-amd64.zip /rclone.zip
 
 RUN unzip rclone.zip && mv rclone*/rclone /usr/bin && \
@@ -9,5 +9,4 @@ RUN unzip rclone.zip && mv rclone*/rclone /usr/bin && \
   rm -rf rclone* && rm -rf /root/.ash_history /root/.cache /var/cache/apk/*
 
 VOLUME [ "/data" ]
-
 CMD ["sh"]

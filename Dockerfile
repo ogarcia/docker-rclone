@@ -1,12 +1,11 @@
 ARG ALPINE_VERSION
 
-FROM alpine:${ALPINE_VERSION}
+FROM alpine:${ALPINE_VERSION} as builder
 ADD https://downloads.rclone.org/rclone-current-linux-amd64.zip /rclone.zip
+RUN unzip rclone.zip && mv rclone*/rclone rclone && apk --no-cache add ca-certificates
 
-RUN unzip rclone.zip && mv rclone*/rclone /usr/bin && \
-  apk -U --no-progress upgrade && \
-  apk --no-progress add ca-certificates && \
-  rm -rf rclone* && rm -rf /root/.ash_history /root/.cache /var/cache/apk/*
-
+FROM alpine:${ALPINE_VERSION}
+COPY --from=builder /rclone /usr/bin
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 VOLUME [ "/data" ]
 CMD ["sh"]

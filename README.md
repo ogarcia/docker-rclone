@@ -1,6 +1,6 @@
 # Small docker of rclone based on Alpine Linux [![CircleCI](https://circleci.com/gh/ogarcia/docker-rclone.svg?style=svg)](https://circleci.com/gh/ogarcia/docker-rclone)
 
-(c) 2018-2021 Óscar García Amor
+(c) 2018-2022 Óscar García Amor
 
 Redistribution, modifications and pull requests are welcomed under the terms
 of GPLv3 license.

@@ -1,6 +1,6 @@
 # Small docker of rclone based on Alpine Linux [![CircleCI](https://circleci.com/gh/ogarcia/docker-rclone.svg?style=svg)](https://circleci.com/gh/ogarcia/docker-rclone)
 
-(c) 2018-2022 Óscar García Amor
+(c) 2018-2023 Óscar García Amor
 
 Redistribution, modifications and pull requests are welcomed under the terms
 of GPLv3 license.
@@ -11,12 +11,13 @@ from several cloud services.
 This docker packages **rclone** under [Alpine Linux][2] a lightweight Linux
 distribution.
 
-Visit [Docker Hub][3] or [Quay][4] to see all available tags.
+Visit [Docker Hub][3], [Quay][4] or [GitHub][5] to see all available tags.
 
 [1]: https://rclone.org/
 [2]: https://alpinelinux.org/
 [3]: https://hub.docker.com/r/connectical/rclone/
 [4]: https://quay.io/repository/connectical/rclone/
+[5]: https://github.com/orgs/connectical/packages/container/package/rclone
 
 ## Run
 

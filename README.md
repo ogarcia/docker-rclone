@@ -15,7 +15,7 @@ Visit [Quay][3] or [GitHub][4] to see all available tags.
 
 [1]: https://rclone.org/
 [2]: https://alpinelinux.org/
-[3]: https://quay.io/repository/connectical/rclone/
+[3]: https://quay.io/repository/connectical/rclone
 [4]: https://github.com/orgs/connectical/packages/container/package/rclone
 
 ## Run

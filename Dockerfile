@@ -1,8 +1,9 @@
 ARG ALPINE_VERSION
 
 FROM alpine:${ALPINE_VERSION} as builder
-ADD https://downloads.rclone.org/rclone-current-linux-amd64.zip /rclone.zip
-RUN unzip rclone.zip && mv rclone*/rclone rclone && apk --no-cache add ca-certificates
+ARG TARGETARCH
+ADD https://downloads.rclone.org/rclone-current-linux-${TARGETARCH}.zip /rclone.zip
+RUN unzip rclone.zip && mv rclone*/rclone rclone && apk --no-cache add ca-certificates && ./rclone --version
 
 FROM alpine:${ALPINE_VERSION}
 COPY --from=builder /rclone /usr/bin

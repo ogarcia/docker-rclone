@@ -2,6 +2,7 @@ variables:
   ALPINE_VERSION: latest
   QUAY_REGISTRY_IMAGE: quay.io/connectical/rclone
   BUILDX_NO_DEFAULT_ATTESTATIONS: 1
+  FORCE_BUILD: "false"
 
 stages:
   - Container
@@ -11,9 +12,36 @@ Build and push container image:
   image: docker
   services:
     - docker:dind
+  before_script:
+    - apk --no-cache add curl jq
   script:
-    - docker context create builder
-    - docker buildx create builder --use
     - docker login -u gitlab-ci-token -p ${CI_JOB_TOKEN} ${CI_REGISTRY}
     - docker login -u ${QUAY_USERNAME} -p ${QUAY_PASSWORD} quay.io
-    - docker buildx build --push --platform linux/amd64,linux/arm64,linux/arm/v7 --build-arg ALPINE_VERSION=${ALPINE_VERSION} --tag ${CI_REGISTRY_IMAGE}:latest --tag ${QUAY_REGISTRY_IMAGE}:latest .
+    # Get current upstream versions
+    - RCLONE_VERSION=$(curl -fsSL https://downloads.rclone.org/version.txt | cut -d' ' -f2)
+    - ALPINE_DIGEST=$(docker buildx imagetools inspect --format '{{json .Manifest}}' docker.io/alpine:${ALPINE_VERSION} | jq -r .digest)
+    - echo "Upstream versions -> rclone ${RCLONE_VERSION}, alpine ${ALPINE_DIGEST}"
+    # Get versions of the published image (empty if not exists or not annotated)
+    - PUBLISHED=$(docker buildx imagetools inspect --raw ${CI_REGISTRY_IMAGE}:latest 2>/dev/null || true)
+    - PUBLISHED_RCLONE_VERSION=$(echo "${PUBLISHED}" | jq -r '.annotations["org.opencontainers.image.version"] // empty' 2>/dev/null || true)
+    - PUBLISHED_ALPINE_DIGEST=$(echo "${PUBLISHED}" | jq -r '.annotations["org.opencontainers.image.base.digest"] // empty' 2>/dev/null || true)
+    - echo "Published versions -> rclone ${PUBLISHED_RCLONE_VERSION:-none}, alpine ${PUBLISHED_ALPINE_DIGEST:-none}"
+    # Only scheduled pipelines are allowed to skip the build
+    - |
+      if [ "${CI_PIPELINE_SOURCE}" = "schedule" ] && [ "${FORCE_BUILD}" != "true" ] \
+        && [ "${RCLONE_VERSION}" = "${PUBLISHED_RCLONE_VERSION}" ] \
+        && [ "${ALPINE_DIGEST}" = "${PUBLISHED_ALPINE_DIGEST}" ]; then
+        echo "No changes in rclone or alpine, skipping build"
+        exit 0
+      fi
+    - docker context create builder
+    - docker buildx create builder --use
+    - >
+      docker buildx build --push
+      --platform linux/amd64,linux/arm64,linux/arm/v7
+      --build-arg ALPINE_VERSION=${ALPINE_VERSION}
+      --annotation "index:org.opencontainers.image.version=${RCLONE_VERSION}"
+      --annotation "index:org.opencontainers.image.base.name=docker.io/alpine:${ALPINE_VERSION}"
+      --annotation "index:org.opencontainers.image.base.digest=${ALPINE_DIGEST}"
+      --tag ${CI_REGISTRY_IMAGE}:latest
+      --tag ${QUAY_REGISTRY_IMAGE}:latest .
